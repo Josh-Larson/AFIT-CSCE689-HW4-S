@@ -69,20 +69,20 @@ public:
       int datasize = sizeof(T);
       int bufsize = datasize * n;
 
-      unsigned char *bytebuf = new unsigned char[bufsize];
+      auto *bytebuf = new unsigned char[bufsize];
 
       buf.clear();
 
       int results;
       if ((results = read(_fd, bytebuf, bufsize)) < 0)
       {
-         delete bytebuf;
+         delete [] bytebuf;
          return -1;
       }
 
       if (results < bufsize) {
          if (results % datasize != 0) {
-            delete bytebuf;
+            delete [] bytebuf;
             return -2;
          }
       }
@@ -93,7 +93,7 @@ public:
          buf.push_back((T) bytebuf[i*datasize]);
       }
 
-      delete bytebuf;
+      delete [] bytebuf;
       return buf.size();
    }
 
@@ -113,14 +113,14 @@ public:
       int datasize = sizeof(T);
       int bufsize = datasize * buf.size();
 
-      unsigned char *bytebuf = new unsigned char[bufsize];
+      auto *bytebuf = new unsigned char[bufsize];
       for (unsigned int i=0; i<buf.size(); i++) {
          memcpy(&bytebuf[i*datasize], &buf[i], sizeof(T));
       }
 
       int results;
       results = write(_fd, bytebuf, bufsize);
-      delete bytebuf;
+      delete [] bytebuf;
       return results;
 
    }
@@ -141,7 +141,7 @@ protected:
 class SocketFD : public FileDesc {
 public:
    SocketFD();
-   ~SocketFD();
+   ~SocketFD() override;
 
    void bindFD(const char *ip_addr, unsigned short int port);
    bool connectTo(const char *ip_addr, unsigned short port);
@@ -171,7 +171,7 @@ private:
 class TermFD : public FileDesc {
 public:
    TermFD();
-   ~TermFD();
+   ~TermFD() override;
 
    void setEchoFD(bool echo);
 
@@ -186,8 +186,8 @@ private:
 
 class FileFD : public FileDesc {
 public:
-   FileFD(const char *filename);
-   ~FileFD();
+   explicit FileFD(const char *filename);
+   ~FileFD() override;
 
    enum fd_file_type {readfd, writefd, appendfd};
 

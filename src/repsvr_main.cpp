@@ -88,6 +88,7 @@ int main(int argc, char *argv[]) {
    unsigned long portval;
    int c = 0;
    while ((c = getopt(argc, argv, "-o:t:v:d:p:a:")) != -1) {
+   	fprintf(stdout, "%d\n", c);
       switch (c) {
 
       // The inject database file specified in the command line
@@ -114,6 +115,7 @@ int main(int argc, char *argv[]) {
       // time multiplier
       case 't':
          time_mult = strtof(optarg, NULL);
+         fprintf(stdout, "Setting time multiple to %f\n", time_mult);
          if (time_mult <= 0.0) {
             std::cerr << "Invalid time multiplier. Must be > 0.\n";
             exit(0);
@@ -180,7 +182,7 @@ int main(int argc, char *argv[]) {
       throw std::runtime_error("Unable to create replication server thread");
 
    // Sleep the duration of the simulation
-   sleep(sim_time / time_mult);
+   sleep(sim_time / time_mult + 10);
 
    // Stop the replication server
    repl_server.shutdown();

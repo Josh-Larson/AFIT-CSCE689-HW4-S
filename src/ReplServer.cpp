@@ -17,7 +17,7 @@ const unsigned int max_servers = 10;
 ReplServer::ReplServer(DronePlotDB &plotdb, float time_mult)
                               :_queue(1),
                                _plotdb(plotdb),
-                               _shutdown(false), 
+                               _shutdown(false),
                                _time_mult(time_mult),
                                _verbosity(1),
                                _ip_addr("127.0.0.1"),
@@ -29,8 +29,8 @@ ReplServer::ReplServer(DronePlotDB &plotdb, const char *ip_addr, unsigned short 
                                           unsigned int verbosity)
                                  :_queue(verbosity),
                                   _plotdb(plotdb),
-                                  _shutdown(false), 
-                                  _time_mult(time_mult), 
+                                  _shutdown(false),
+                                  _time_mult(time_mult),
                                   _verbosity(verbosity),
                                   _ip_addr(ip_addr),
                                   _port(port)
@@ -48,8 +48,8 @@ ReplServer::~ReplServer() {
  *                   by _time_mult to speed up or slow down
  **********************************************************************************************/
 
-time_t ReplServer::getAdjustedTime() {
-   return static_cast<time_t>((time(NULL) - _start_time) * _time_mult);
+double ReplServer::getAdjustedTime() {
+	return static_cast<double>(time(nullptr) - _start_time) * _time_mult;
 }
 
 /**********************************************************************************************
@@ -87,10 +87,11 @@ void ReplServer::replicate() {
    while (!_shutdown) {
 
       // Check for new connections, process existing connections, and populate the queue as applicable
-      _queue.handleQueue();     
+      _queue.handleQueue();
 
       // See if it's time to replicate and, if so, go through the database, identifying new plots
       // that have not been replicated yet and adding them to the queue for replication
+//      fprintf(stdout, "Time: %f\n", getAdjustedTime() - _last_repl);
       if (getAdjustedTime() - _last_repl > secs_between_repl) {
 
          queueNewPlots();
@@ -105,11 +106,11 @@ void ReplServer::replicate() {
       while (_queue.pop(sid, data)) {
 
          // Incoming replication--add it to this server's local database
-         addReplDronePlots(data);         
-      }       
+         addReplDronePlots(data);
+      }
 
       usleep(1000);
-   }   
+   }
 }
 
 /**********************************************************************************************
@@ -162,7 +163,7 @@ unsigned int ReplServer::queueNewPlots() {
       _queue.sendToAll(marshall_data);
    }
 
-   if (_verbosity >= 2) 
+   if (_verbosity >= 2)
       std::cout << "Queued up " << count << " plots to be replicated.\n";
 
    return count;
@@ -198,10 +199,10 @@ void ReplServer::addReplDronePlots(std::vector<uint8_t> &data) {
       plot.clear();
       plot.assign(dptr, dptr + DronePlot::getDataSize());
       addSingleDronePlot(plot);
-      dptr += DronePlot::getDataSize();      
+      dptr += DronePlot::getDataSize();
    }
    if (_verbosity >= 2)
-      std::cout << "Replicated in " << count << " plots\n";   
+      std::cout << "Replicated in " << count << " plots\n";
 }
 
 

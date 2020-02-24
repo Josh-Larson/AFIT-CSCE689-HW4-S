@@ -101,12 +101,12 @@ ssize_t FileDesc::readFD(std::string &buf) {
    bzero(readbuf, sizeof(char) * bufsize);
    ssize_t amt_read = 0;
    if ((amt_read = read(_fd, readbuf, bufsize)) < 0) {
-      delete readbuf;
+      delete [] readbuf;
       return -1;
    }
    
    buf = readbuf;
-   delete readbuf;
+   delete [] readbuf;
    return amt_read;
 }
 

@@ -451,7 +451,7 @@ void DronePlotDB::erase(unsigned int i) {
  *****************************************************************************************/
 
 std::list<DronePlot>::iterator DronePlotDB::erase(std::list<DronePlot>::iterator dptr) {
-   // First lock the mutex (blocking)
+   // First lock the mutex (blocking
    pthread_mutex_lock(&_mutex);
 
    return _dbdata.erase(dptr);

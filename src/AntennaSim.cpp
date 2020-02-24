@@ -1,6 +1,7 @@
 #include <iostream>
 #include "AntennaSim.h"
 #include "DronePlotDB.h"
+#include <unistd.h>
 
 /*****************************************************************************************
  * AntennaSim (constructor) - takes in a reference to the accessible database that will be
@@ -52,7 +53,7 @@ void AntennaSim::loadSourceDB(const char *filename) {
 }
 
 double AntennaSim::getAdjustedTime() {
-   return static_cast<time_t>(((double) time(NULL) - (double) _start_time) * _time_mult);
+   return static_cast<double>(time(nullptr) - _start_time) * _time_mult;
 }
 
 /*****************************************************************************************
@@ -79,7 +80,7 @@ void AntennaSim::simulate() {
    for (unsigned int i=3; i>0; i--) {
       if (_verbosity >= 2)
          std::cout << i << "\n";
-      sleep(1);
+      usleep(1'000'000);
    }
 
    // Initialize
