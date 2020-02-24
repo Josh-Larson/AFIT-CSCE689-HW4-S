@@ -15,21 +15,10 @@ bool compare_plot(const DronePlot &pp1, const DronePlot &pp2) {
 }
 
 /*****************************************************************************************
- * DronePlot - Constructor for a drone plot object, default initializers
- *****************************************************************************************/
-DronePlot::DronePlot() : drone_id(-1), node_id(-1), timestamp(0), latitude(0.0), longitude(0.0), _flags(0) {
-
-}
-
-/*****************************************************************************************
  * DronePlot - Constructor for a drone plot object, initialized by parameters
  *****************************************************************************************/
 
 DronePlot::DronePlot(int in_droneid, int in_nodeid, int in_timestamp, float in_latitude, float in_longitude) : drone_id(in_droneid), node_id(in_nodeid), timestamp(in_timestamp), latitude(in_latitude), longitude(in_longitude), _flags(0) {
-
-}
-
-DronePlot::~DronePlot() {
 
 }
 
@@ -108,7 +97,7 @@ int DronePlot::readCSV(std::string &buf) {
 	for (unsigned int i = 0; i < 4; i++) {
 		
 		// Find the next comma
-		commapos = buf.find(",", startpos);
+		commapos = buf.find(',', startpos);
 		if (commapos == std::string::npos)
 			return -1;
 		
@@ -131,7 +120,6 @@ int DronePlot::readCSV(std::string &buf) {
 				break;
 			default:
 				throw std::runtime_error("This should not have happened");
-				break;
 		}
 		startpos = commapos + 1;
 	}
@@ -168,26 +156,11 @@ void DronePlot::setFlags(unsigned short flags) {
 }
 
 void DronePlot::clrFlags(unsigned short flags) {
-	_flags &= ~flags;
+	_flags &= (unsigned short) ~flags;
 }
 
 bool DronePlot::isFlagSet(unsigned short flags) {
-	return (bool) _flags & flags;
-}
-
-/*****************************************************************************************
- * DronePlotDB - Constructor, currently initializes the mutex only
- *
- *****************************************************************************************/
-DronePlotDB::DronePlotDB() {
-	
-	// Initialize our mutex for thread protection
-	pthread_mutex_init(&_mutex, NULL);
-}
-
-// No behavior for destructor yet
-DronePlotDB::~DronePlotDB() {
-
+	return (bool) (_flags & flags);
 }
 
 
@@ -203,13 +176,9 @@ DronePlotDB::~DronePlotDB() {
  *****************************************************************************************/
 
 void DronePlotDB::addPlot(int drone_id, int node_id, time_t timestamp, float latitude, float longitude) {
-	// First lock the mutex (blocking)
-	pthread_mutex_lock(&_mutex);
+	std::unique_lock lk(_mutex);
 	
 	_dbdata.emplace_back(drone_id, node_id, timestamp, latitude, longitude);
-	
-	// Unlock the mutex before we exit
-	pthread_mutex_unlock(&_mutex);
 }
 
 /*****************************************************************************************
@@ -240,7 +209,7 @@ int DronePlotDB::loadCSVFile(const char *filename) {
 	while (!cfile.eof()) {
 		std::getline(cfile, buf);
 		
-		if (buf.size() == 0)
+		if (buf.empty())
 			continue;
 		
 		// Add this to the end and get an iterator pointing to it
@@ -277,11 +246,9 @@ int DronePlotDB::writeCSVFile(const char *filename) {
 		return -1;
 	
 	std::string buf;
-	std::list<DronePlot>::iterator lptr = _dbdata.begin();
-	for (; lptr != _dbdata.end(); lptr++) {
-		lptr->writeCSV(buf);
+	for (auto & data : _dbdata) {
+		data.writeCSV(buf);
 		cfile << buf;
-		count++;
 	}
 	
 	cfile.close();
@@ -312,12 +279,11 @@ int DronePlotDB::writeBinaryFile(const char *filename) {
 	plot.reserve(ppsize);
 	
 	// Loop through all data points and write them to our binary vector
-	std::list<DronePlot>::iterator lptr = _dbdata.begin();
-	for (; lptr != _dbdata.end(); lptr++) {
-		lptr->serialize(plot);
-		
+	for (auto & data : _dbdata) {
+		data.serialize(plot);
 		count++;
 	}
+	
 	// Write it to a file
 	std::cout << "Writing count: " << plot.size() << "\n";
 	outfile.writeBytes<uint8_t>(plot);
@@ -376,13 +342,9 @@ int DronePlotDB::loadBinaryFile(const char *filename) {
  *****************************************************************************************/
 
 void DronePlotDB::popFront() {
-	// First lock the mutex (blocking)
-	pthread_mutex_lock(&_mutex);
+	std::unique_lock lk(_mutex);
 	
 	_dbdata.pop_front();
-	
-	// Unlock the mutex before we exit
-	pthread_mutex_unlock(&_mutex);
 }
 
 /*****************************************************************************************
@@ -395,20 +357,15 @@ void DronePlotDB::popFront() {
  *****************************************************************************************/
 
 void DronePlotDB::erase(unsigned int i) {
-	// First lock the mutex (blocking)
-	pthread_mutex_lock(&_mutex);
+	std::unique_lock lk(_mutex);
 	
 	if (i > _dbdata.size())
 		throw std::runtime_error("erase function called with index out of scope for std::list.");
 	
-	std::list<DronePlot>::iterator diter = _dbdata.begin();
+	auto diter = _dbdata.begin();
 	for (unsigned int x = 0; x < i; x++, diter++);
 	
 	_dbdata.erase(diter);
-	
-	
-	// Unlock the mutex before we exit
-	pthread_mutex_unlock(&_mutex);
 }
 
 /*****************************************************************************************
@@ -421,19 +378,14 @@ void DronePlotDB::erase(unsigned int i) {
  *****************************************************************************************/
 
 std::list<DronePlot>::iterator DronePlotDB::erase(std::list<DronePlot>::iterator dptr) {
-	// First lock the mutex (blocking
-	pthread_mutex_lock(&_mutex);
+	std::unique_lock lk(_mutex);
 	
 	return _dbdata.erase(dptr);
-	
-	// Unlock the mutex before we exit
-	pthread_mutex_unlock(&_mutex);
-	
 }
 
 // Removes all of a particular node (not for student use)
 void DronePlotDB::removeNodeID(unsigned int node_id) {
-	pthread_mutex_lock(&_mutex);
+	std::unique_lock lk(_mutex);
 	
 	auto del_iter = _dbdata.begin();
 	while (del_iter != _dbdata.end()) {
@@ -442,8 +394,6 @@ void DronePlotDB::removeNodeID(unsigned int node_id) {
 		else
 			del_iter++;
 	}
-	
-	pthread_mutex_unlock(&_mutex);
 }
 
 /*****************************************************************************************
@@ -452,11 +402,9 @@ void DronePlotDB::removeNodeID(unsigned int node_id) {
  *       Used by the simulator--students should not need to use this
  *****************************************************************************************/
 void DronePlotDB::sortByTime() {
-	pthread_mutex_lock(&_mutex);
+	std::unique_lock lk(_mutex);
 	
 	_dbdata.sort(compare_plot);
-	
-	pthread_mutex_unlock(&_mutex);
 }
 
 /*****************************************************************************************
@@ -465,6 +413,10 @@ void DronePlotDB::sortByTime() {
 
 void DronePlotDB::clear() {
 	_dbdata.clear();
+}
+
+void DronePlotDB::deduplicate() {
+
 }
 
 

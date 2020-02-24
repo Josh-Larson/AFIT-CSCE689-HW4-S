@@ -4,7 +4,7 @@
 #include <list>
 #include <vector>
 #include <unistd.h>
-#include <pthread.h>
+#include <mutex>
 #include "exceptions.h"
 
 
@@ -21,9 +21,9 @@
 // Manages the drone plot database for a particular node.
 class DronePlot {
 	public:
-	DronePlot();
+	DronePlot() = default;
 	DronePlot(int in_droneid, int in_nodeid, int in_timestamp, float in_latitude, float in_longitude);
-	virtual ~DronePlot();
+	virtual ~DronePlot() = default;
 	
 	// Function to serialize, or convert this data into a binary stream in a vector class and back
 	void serialize(std::vector<uint8_t> &buf);
@@ -41,11 +41,11 @@ class DronePlot {
 	bool isFlagSet(unsigned short flags);
 	
 	// attributes - freely accessible to modify as needed
-	unsigned int drone_id;
-	unsigned int node_id;
-	time_t timestamp;
-	float latitude;
-	float longitude;
+	unsigned int drone_id  = -1;
+	unsigned int node_id   = -1;
+	time_t       timestamp = 0;
+	float        latitude  = 0;
+	float        longitude = 0;
 	
 	private:
 	unsigned short _flags;
@@ -60,8 +60,8 @@ class DronePlot {
  **************************************************************************************************/
 class DronePlotDB {
 	public:
-	DronePlotDB();
-	virtual ~DronePlotDB();
+	DronePlotDB() = default;
+	virtual ~DronePlotDB() = default;
 	
 	// Add a plot to the database with the given attributes (mutex'd)
 	void addPlot(int drone_id, int node_id, time_t timestamp, float lattitude, float longitude);
@@ -100,8 +100,9 @@ class DronePlotDB {
 	
 	private:
 	std::list<DronePlot> _dbdata;
+	std::mutex _mutex;
 	
-	pthread_mutex_t _mutex;
+	void deduplicate();
 };
 
 
