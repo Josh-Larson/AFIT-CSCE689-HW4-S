@@ -537,7 +537,6 @@ void TCPConn::assignOutgoingData(std::vector<uint8_t> &data) {
  *    Throws: runtime_error for unrecoverable issues
  **********************************************************************************************/
 void TCPConn::disconnect() {
-	fprintf(stdout, "Reached end of machine with state: %d\n", _status);
 	_connfd.closeFD();
 	_connected = false;
 }
