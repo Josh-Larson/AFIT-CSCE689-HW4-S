@@ -10,17 +10,17 @@
  ********************************************************************************/
 
 class ALMgr {
-   public:
-      ALMgr(const char *al_file, bool is_whitelist = true);
-      ~ALMgr();
-
-      bool isAllowed(const char *ipaddr);
-      bool isAllowed(unsigned long ipaddr);
-
-   private:
-      std::string _al_file;
-
-      bool _is_whitelist;
+	public:
+	ALMgr(const char *al_file, bool is_whitelist = true);
+	~ALMgr();
+	
+	bool isAllowed(const char *ipaddr);
+	bool isAllowed(unsigned long ipaddr);
+	
+	private:
+	std::string _al_file;
+	
+	bool _is_whitelist;
 };
 
 #endif // ALMGR_H

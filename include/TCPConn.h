@@ -72,17 +72,17 @@ class TCPConn {
 	
 	protected:
 	// Functions to execute various stages of a connection
-	void sendSID(const std::vector<uint8_t> & recvBuf);
-	void receiveSID(const std::vector<uint8_t> & recvBuf);
-	void transmitData(const std::vector<uint8_t> & recvBuf);
-	void waitForData(const std::vector<uint8_t> & recvBuf);
-	void awaitAck(const std::vector<uint8_t> & recvBuf);
-	void handleAuth2(const std::vector<uint8_t> & recvBuf);
-	void handleAuth3(const std::vector<uint8_t> & recvBuf);
-	void handleAuth4(const std::vector<uint8_t> & recvBuf);
+	void sendSID(const std::vector<uint8_t> &recvBuf);
+	void receiveSID(const std::vector<uint8_t> &recvBuf);
+	void transmitData(const std::vector<uint8_t> &recvBuf);
+	void waitForData(const std::vector<uint8_t> &recvBuf);
+	void awaitAck(const std::vector<uint8_t> &recvBuf);
+	void handleAuth2(const std::vector<uint8_t> &recvBuf);
+	void handleAuth3(const std::vector<uint8_t> &recvBuf);
+	void handleAuth4(const std::vector<uint8_t> &recvBuf);
 	void sendRandomBytes();
-	void sendEncryptedBytes(const std::array<uint8_t, RANDOM_BYTE_COUNT> & randomBytes);
-	void sendRandomAndEncryptedBytes(const std::array<uint8_t, RANDOM_BYTE_COUNT> & randomBytes);
+	void sendEncryptedBytes(const std::array<uint8_t, RANDOM_BYTE_COUNT> &randomBytes);
+	void sendRandomAndEncryptedBytes(const std::array<uint8_t, RANDOM_BYTE_COUNT> &randomBytes);
 	
 	std::optional<std::vector<uint8_t>> getPacket();
 	

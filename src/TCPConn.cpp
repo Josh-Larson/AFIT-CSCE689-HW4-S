@@ -1,10 +1,7 @@
 #include <stdexcept>
-#include <strings.h>
 #include <unistd.h>
-#include <cstring>
 #include <algorithm>
 #include <iostream>
-#include <sstream>
 #include <random>
 #include "TCPConn.h"
 #include "strfuncts.h"
@@ -150,19 +147,19 @@ void TCPConn::handleConnection() {
 				case s_connecting:
 					sendSID(*packet);
 					break;
-				// Server: Wait for the SID from a newly-connected client, then send our SID
+					// Server: Wait for the SID from a newly-connected client, then send our SID
 				case s_connected:
 					receiveSID(*packet);
 					break;
-				// Client: connecting user - replicate data
+					// Client: connecting user - replicate data
 				case s_datatx:
 					transmitData(*packet);
 					break;
-				// Server: Receive data from the client
+					// Server: Receive data from the client
 				case s_datarx:
 					waitForData(*packet);
 					break;
-				// Client: Wait for acknowledgement that data sent was received before disconnecting
+					// Client: Wait for acknowledgement that data sent was received before disconnecting
 				case s_waitack:
 					awaitAck(*packet);
 					break;
@@ -175,7 +172,7 @@ void TCPConn::handleConnection() {
 				case s_auth4:
 					handleAuth4(*packet);
 					break;
-				// Server: Data received and conn disconnected, but waiting for the data to be retrieved
+					// Server: Data received and conn disconnected, but waiting for the data to be retrieved
 				case s_hasdata:
 					break;
 				default:
@@ -196,7 +193,7 @@ void TCPConn::handleConnection() {
  *    Throws: socket_error for network issues, runtime_error for unrecoverable issues
  **********************************************************************************************/
 
-void TCPConn::sendSID(const std::vector<uint8_t> & recvBuf) {
+void TCPConn::sendSID(const std::vector<uint8_t> &recvBuf) {
 	std::vector<uint8_t> buf(_svr_id.begin(), _svr_id.end());
 	wrapCmd(buf, c_sid, c_endsid);
 	sendData(buf);
@@ -210,7 +207,7 @@ void TCPConn::sendSID(const std::vector<uint8_t> & recvBuf) {
  *    Throws: socket_error for network issues, runtime_error for unrecoverable issues
  **********************************************************************************************/
 
-void TCPConn::receiveSID(const std::vector<uint8_t> & recvBuf) {
+void TCPConn::receiveSID(const std::vector<uint8_t> &recvBuf) {
 	std::string node(recvBuf.begin(), recvBuf.end());
 	setNodeID(node.c_str());
 	
@@ -225,7 +222,7 @@ void TCPConn::receiveSID(const std::vector<uint8_t> & recvBuf) {
  *    Throws: socket_error for network issues, runtime_error for unrecoverable issues
  **********************************************************************************************/
 
-void TCPConn::transmitData(const std::vector<uint8_t> & recvBuf) {
+void TCPConn::transmitData(const std::vector<uint8_t> &recvBuf) {
 	std::string node(recvBuf.begin(), recvBuf.end());
 	setNodeID(node.c_str());
 	
@@ -247,7 +244,7 @@ void TCPConn::transmitData(const std::vector<uint8_t> & recvBuf) {
  *    Throws: socket_error for network issues, runtime_error for unrecoverable issues
  **********************************************************************************************/
 
-void TCPConn::waitForData(const std::vector<uint8_t> & recvBuf) {
+void TCPConn::waitForData(const std::vector<uint8_t> &recvBuf) {
 	_inputbuf = recvBuf;
 	_data_ready = true;
 	
@@ -267,14 +264,14 @@ void TCPConn::waitForData(const std::vector<uint8_t> & recvBuf) {
  *    Throws: socket_error for network issues, runtime_error for unrecoverable issues
  **********************************************************************************************/
 
-void TCPConn::awaitAck(const std::vector<uint8_t> & recvBuf) {
+void TCPConn::awaitAck(const std::vector<uint8_t> &recvBuf) {
 	if (_verbosity >= 3)
 		std::cout << "Data ack received from " << getNodeID() << ". Disconnecting.\n";
 	
 	disconnect();
 }
 
-void TCPConn::handleAuth2(const std::vector<uint8_t> & recvBuf) {
+void TCPConn::handleAuth2(const std::vector<uint8_t> &recvBuf) {
 	// TODO: RX random bytes
 	auto rxRandomBytes = std::array<uint8_t, RANDOM_BYTE_COUNT>{};
 	std::copy(recvBuf.begin(), recvBuf.end(), rxRandomBytes.begin());
@@ -284,7 +281,7 @@ void TCPConn::handleAuth2(const std::vector<uint8_t> & recvBuf) {
 	_status = s_auth4;
 }
 
-void TCPConn::handleAuth3(const std::vector<uint8_t> & recvBuf) {
+void TCPConn::handleAuth3(const std::vector<uint8_t> &recvBuf) {
 	// RX random bytes
 	auto rxRandomBytes = std::array<uint8_t, RANDOM_BYTE_COUNT>{};
 	std::copy(recvBuf.begin(), recvBuf.begin() + RANDOM_BYTE_COUNT, rxRandomBytes.begin());
@@ -307,7 +304,7 @@ void TCPConn::handleAuth3(const std::vector<uint8_t> & recvBuf) {
 	sendData(sidBuffer);
 }
 
-void TCPConn::handleAuth4(const std::vector<uint8_t> & recvBuf) {
+void TCPConn::handleAuth4(const std::vector<uint8_t> &recvBuf) {
 	// TODO: RX encrypted bytes
 	auto buf = recvBuf;
 	decryptData(buf);
@@ -425,8 +422,8 @@ std::optional<std::vector<uint8_t>> TCPConn::getPacket() {
  **********************************************************************************************/
 
 std::optional<std::vector<uint8_t>> TCPConn::getCmdData(std::pair<std::vector<uint8_t>, std::vector<uint8_t>> cmd) {
-	auto & startcmd = std::get<0>(cmd);
-	auto & endcmd = std::get<1>(cmd);
+	auto &startcmd = std::get<0>(cmd);
+	auto &endcmd = std::get<1>(cmd);
 	if (startcmd.empty())
 		return std::make_optional(std::vector<uint8_t>{});
 	

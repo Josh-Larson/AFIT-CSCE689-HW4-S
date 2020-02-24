@@ -29,12 +29,12 @@ FileDesc::~FileDesc() {
  *****************************************************************************************/
 
 void FileDesc::setNonBlocking() {
-   // Set the socket to nonblocking
-   int flags = fcntl(_fd, F_GETFL);
-   if ((flags < 0) || (fcntl(_fd, F_SETFL, flags | O_NONBLOCK) < 0)) {
-      throw socket_error("Failed setting file descriptor to nonblocking.");
-   }
-
+	// Set the socket to nonblocking
+	int flags = fcntl(_fd, F_GETFL);
+	if ((flags < 0) || (fcntl(_fd, F_SETFL, flags | O_NONBLOCK) < 0)) {
+		throw socket_error("Failed setting file descriptor to nonblocking.");
+	}
+	
 }
 
 /*****************************************************************************************
@@ -45,7 +45,7 @@ void FileDesc::setNonBlocking() {
  *    Returns: returns the results of the FD write function, 1 for success, -1 for failure
  *****************************************************************************************/
 ssize_t FileDesc::writeByte(unsigned char data) {
-   return write(_fd, &data, 1);
+	return write(_fd, &data, 1);
 }
 
 /*****************************************************************************************
@@ -57,7 +57,7 @@ ssize_t FileDesc::writeByte(unsigned char data) {
  *****************************************************************************************/
 
 ssize_t FileDesc::readByte(unsigned char &buf) {
-   return read(_fd, &buf, 1);
+	return read(_fd, &buf, 1);
 }
 
 /*****************************************************************************************
@@ -69,23 +69,23 @@ ssize_t FileDesc::readByte(unsigned char &buf) {
  *****************************************************************************************/
 
 bool FileDesc::hasData(long ms_timeout) {
-   fd_set read_fds;
-   timeval timeout;
-
-   timeout.tv_sec = 0;
-   timeout.tv_usec = ms_timeout;
-
-   FD_ZERO(&read_fds);
-   FD_SET(_fd, &read_fds);
-
-   int n;
-   if ((n = select(_fd+1, &read_fds, NULL, NULL, &timeout)) == -1) {
-      throw socket_error("Select error on file descriptor.");
-   }
-
-   if (n == 0)
-      return false;
-   return true;
+	fd_set read_fds;
+	timeval timeout;
+	
+	timeout.tv_sec = 0;
+	timeout.tv_usec = ms_timeout;
+	
+	FD_ZERO(&read_fds);
+	FD_SET(_fd, &read_fds);
+	
+	int n;
+	if ((n = select(_fd + 1, &read_fds, NULL, NULL, &timeout)) == -1) {
+		throw socket_error("Select error on file descriptor.");
+	}
+	
+	if (n == 0)
+		return false;
+	return true;
 }
 
 /*****************************************************************************************
@@ -97,17 +97,17 @@ bool FileDesc::hasData(long ms_timeout) {
  *****************************************************************************************/
 
 ssize_t FileDesc::readFD(std::string &buf) {
-   char *readbuf = new char[bufsize];
-   bzero(readbuf, sizeof(char) * bufsize);
-   ssize_t amt_read = 0;
-   if ((amt_read = read(_fd, readbuf, bufsize)) < 0) {
-      delete [] readbuf;
-      return -1;
-   }
-   
-   buf = readbuf;
-   delete [] readbuf;
-   return amt_read;
+	char *readbuf = new char[bufsize];
+	bzero(readbuf, sizeof(char) * bufsize);
+	ssize_t amt_read = 0;
+	if ((amt_read = read(_fd, readbuf, bufsize)) < 0) {
+		delete[] readbuf;
+		return -1;
+	}
+	
+	buf = readbuf;
+	delete[] readbuf;
+	return amt_read;
 }
 
 /*****************************************************************************************
@@ -119,15 +119,15 @@ ssize_t FileDesc::readFD(std::string &buf) {
  *****************************************************************************************/
 
 ssize_t FileDesc::writeFD(std::string &str) {
-   return writeFD(str.c_str(), str.size());
+	return writeFD(str.c_str(), str.size());
 }
 
 ssize_t FileDesc::writeFD(const char *data) {
-   return writeFD(data, strlen(data));
+	return writeFD(data, strlen(data));
 }
 
 ssize_t FileDesc::writeFD(const char *data, unsigned int len) {
-   return write(_fd, data, len);
+	return write(_fd, data, len);
 }
 
 /*************************************************************************************
@@ -137,16 +137,16 @@ ssize_t FileDesc::writeFD(const char *data, unsigned int len) {
  *
  *************************************************************************************/
 bool FileDesc::isOpen() {
-   if ((fcntl(_fd, F_GETFD) == -1) && (errno == EBADF))
-      return false;
-   return true;
+	if ((fcntl(_fd, F_GETFD) == -1) && (errno == EBADF))
+		return false;
+	return true;
 }
 
 /***************************************************************************************
  * closeFD - closes the FD cleanly
  ***************************************************************************************/
 void FileDesc::closeFD() {
-   close(_fd);
+	close(_fd);
 }
 
 /****************************************************************************************
@@ -156,14 +156,14 @@ void FileDesc::closeFD() {
    
  ****************************************************************************************/
 
-SocketFD::SocketFD():FileDesc() {
-
-   // Create the socket
-   _fd = socket(AF_INET, SOCK_STREAM, 0);
-   if (_fd == -1) {
-      throw socket_error("Socket creation failed.");
-   }
-   bzero(&_fd_addr, sizeof(_fd_addr));
+SocketFD::SocketFD() : FileDesc() {
+	
+	// Create the socket
+	_fd = socket(AF_INET, SOCK_STREAM, 0);
+	if (_fd == -1) {
+		throw socket_error("Socket creation failed.");
+	}
+	bzero(&_fd_addr, sizeof(_fd_addr));
 }
 
 SocketFD::~SocketFD() {
@@ -177,11 +177,11 @@ SocketFD::~SocketFD() {
  *****************************************************************************************/
 
 void SocketFD::setReusable() {
-   
-   int enable = 1;
-   if (setsockopt(_fd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(enable)) < 0)
-      throw socket_error("setsockopt failure setting SO_REUSEADDR");
-
+	
+	int enable = 1;
+	if (setsockopt(_fd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(enable)) < 0)
+		throw socket_error("setsockopt failure setting SO_REUSEADDR");
+	
 }
 
 /*****************************************************************************************
@@ -195,16 +195,16 @@ void SocketFD::setReusable() {
  *****************************************************************************************/
 
 void SocketFD::bindFD(const char *ip_addr, short unsigned int port) {
-
-   // Load the socket information to prep for binding
-   _fd_addr.sin_family = AF_INET;
-   inet_pton(AF_INET, ip_addr, &_fd_addr.sin_addr.s_addr);
-   _fd_addr.sin_port = htons(port);
-
-   if ((bind(_fd, (struct sockaddr *) &_fd_addr, sizeof(_fd_addr))) != 0) {
-      throw socket_error("Socket bind failed.");
-   }
-
+	
+	// Load the socket information to prep for binding
+	_fd_addr.sin_family = AF_INET;
+	inet_pton(AF_INET, ip_addr, &_fd_addr.sin_addr.s_addr);
+	_fd_addr.sin_port = htons(port);
+	
+	if ((bind(_fd, (struct sockaddr *) &_fd_addr, sizeof(_fd_addr))) != 0) {
+		throw socket_error("Socket bind failed.");
+	}
+	
 }
 
 /*****************************************************************************************
@@ -217,28 +217,28 @@ void SocketFD::bindFD(const char *ip_addr, short unsigned int port) {
  *****************************************************************************************/
 
 bool SocketFD::connectTo(const char *ip_addr, unsigned short port) {
-
-   unsigned long n_ip_addr;
-
-   inet_pton(AF_INET, ip_addr, &n_ip_addr);
-   return connectTo(n_ip_addr, htons(port));
+	
+	unsigned long n_ip_addr;
+	
+	inet_pton(AF_INET, ip_addr, &n_ip_addr);
+	return connectTo(n_ip_addr, htons(port));
 }
 
 bool SocketFD::connectTo(unsigned long ip_addr, unsigned short port) {
-   if ((_fd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
-      throw socket_error("Socket creation failed.");
-
-   // Load the socket information to prep for binding
-   bzero(&_fd_addr, sizeof(_fd_addr));
-   _fd_addr.sin_family = AF_INET;
-   _fd_addr.sin_addr.s_addr = ip_addr;
-   _fd_addr.sin_port = port;
-
-   if (connect(_fd, (struct sockaddr *) &_fd_addr, sizeof(_fd_addr)) != 0)
-      return false;
-
-   return true;
-
+	if ((_fd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
+		throw socket_error("Socket creation failed.");
+	
+	// Load the socket information to prep for binding
+	bzero(&_fd_addr, sizeof(_fd_addr));
+	_fd_addr.sin_family = AF_INET;
+	_fd_addr.sin_addr.s_addr = ip_addr;
+	_fd_addr.sin_port = port;
+	
+	if (connect(_fd, (struct sockaddr *) &_fd_addr, sizeof(_fd_addr)) != 0)
+		return false;
+	
+	return true;
+	
 }
 
 /*****************************************************************************************
@@ -251,8 +251,8 @@ bool SocketFD::connectTo(unsigned long ip_addr, unsigned short port) {
  *****************************************************************************************/
 
 void SocketFD::listenFD(int backlog) {
-   if (listen(_fd, backlog) != 0)
-      throw socket_error("Server failed attempting to listen on port");
+	if (listen(_fd, backlog) != 0)
+		throw socket_error("Server failed attempting to listen on port");
 }
 
 
@@ -265,13 +265,13 @@ void SocketFD::listenFD(int backlog) {
  *****************************************************************************************/
 
 bool SocketFD::acceptFD(SocketFD &server) {
-   socklen_t len = sizeof(_fd_addr);
-
-   _fd = accept(server.getFD(), (struct sockaddr *) &_fd_addr, &len);
-   if (_fd == -1)
-      return false;
-
-   return true;
+	socklen_t len = sizeof(_fd_addr);
+	
+	_fd = accept(server.getFD(), (struct sockaddr *) &_fd_addr, &len);
+	if (_fd == -1)
+		return false;
+	
+	return true;
 }
 
 /*****************************************************************************************
@@ -280,7 +280,7 @@ bool SocketFD::acceptFD(SocketFD &server) {
  *****************************************************************************************/
 
 unsigned long SocketFD::getIPAddr() {
-   return _fd_addr.sin_addr.s_addr;
+	return _fd_addr.sin_addr.s_addr;
 }
 
 /******************************************************************************************
@@ -288,7 +288,7 @@ unsigned long SocketFD::getIPAddr() {
  *
  ******************************************************************************************/
 unsigned short SocketFD::getPort() {
-   return ntohs(_fd_addr.sin_port);
+	return ntohs(_fd_addr.sin_port);
 }
 
 
@@ -297,13 +297,13 @@ unsigned short SocketFD::getPort() {
  *
  ******************************************************************************************/
 void SocketFD::getIPAddrStr(std::string &buf) {
-   char ipaddr_str[16];
-   inet_ntop(AF_INET, (void *) &_fd_addr.sin_addr.s_addr, ipaddr_str, 16);
-   buf = ipaddr_str;
+	char ipaddr_str[16];
+	inet_ntop(AF_INET, (void *) &_fd_addr.sin_addr.s_addr, ipaddr_str, 16);
+	buf = ipaddr_str;
 }
 
-TermFD::TermFD():FileDesc() {
-   _fd = 0;
+TermFD::TermFD() : FileDesc() {
+	_fd = 0;
 }
 
 TermFD::~TermFD() {
@@ -318,11 +318,11 @@ TermFD::~TermFD() {
  *****************************************************************************************/
 
 void TermFD::setEchoFD(bool echo) {
-   hideInput(_fd, !echo);
+	hideInput(_fd, !echo);
 }
 
 
-FileFD::FileFD(const char *filename):FileDesc(), _filename(filename) {
+FileFD::FileFD(const char *filename) : FileDesc(), _filename(filename) {
 
 }
 
@@ -345,16 +345,16 @@ FileFD::~FileFD() {
  ******************************************************************************************/
 
 bool FileFD::openFile(fd_file_type ftype, bool create) {
-   int file_flags[] = {O_RDONLY, O_WRONLY, O_WRONLY | O_APPEND};
-
-   int flags = file_flags[ftype];
-   if (create)
-      flags |= O_CREAT;
-
-   if ((_fd = open(_filename.c_str(), flags, S_IRUSR | S_IWUSR)) == -1)
-      return false;
-
-   return true;
+	int file_flags[] = {O_RDONLY, O_WRONLY, O_WRONLY | O_APPEND};
+	
+	int flags = file_flags[ftype];
+	if (create)
+		flags |= O_CREAT;
+	
+	if ((_fd = open(_filename.c_str(), flags, S_IRUSR | S_IWUSR)) == -1)
+		return false;
+	
+	return true;
 }
 
 /*****************************************************************************************
@@ -369,29 +369,29 @@ bool FileFD::openFile(fd_file_type ftype, bool create) {
  *****************************************************************************************/
 
 ssize_t FileDesc::readStr(std::string &buf) {
-   char strbuf[100];
-   unsigned int i = 0;
-   char readchar = 0;
-   int results;
-
-   buf.clear();
-
-   while ((results = read(_fd, &readchar, 1) > 0) && (readchar != '\n')) {
-      strbuf[i++] = readchar;
-
-      // If we're overflowing our buffer, dump into the std::string and clear the buffer
-      if (i == 99) {
-         strbuf[99] = '\0';
-         buf += strbuf;
-         i = 0;
-      }
-   }
-
-   if (results == -1)
-      return -1;
-
-   strbuf[i] = '\0';
-   buf += strbuf;
-   return buf.size();
+	char strbuf[100];
+	unsigned int i = 0;
+	char readchar = 0;
+	int results;
+	
+	buf.clear();
+	
+	while ((results = read(_fd, &readchar, 1) > 0) && (readchar != '\n')) {
+		strbuf[i++] = readchar;
+		
+		// If we're overflowing our buffer, dump into the std::string and clear the buffer
+		if (i == 99) {
+			strbuf[99] = '\0';
+			buf += strbuf;
+			i = 0;
+		}
+	}
+	
+	if (results == -1)
+		return -1;
+	
+	strbuf[i] = '\0';
+	buf += strbuf;
+	return buf.size();
 }
 
