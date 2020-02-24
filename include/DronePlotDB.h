@@ -3,6 +3,7 @@
 
 #include <list>
 #include <vector>
+#include <map>
 #include <unistd.h>
 #include <mutex>
 #include "exceptions.h"
@@ -59,6 +60,15 @@ class DronePlot {
  *
  **************************************************************************************************/
 class DronePlotDB {
+	struct TimeSkew {
+		unsigned int node1;
+		unsigned int node2;
+		/** The time skew from node1 to node2. AKA node2.time - node1.time */
+		time_t skew;
+		
+		[[nodiscard]] bool operator==(const TimeSkew & t) const noexcept { return node1 == t.node1 && node2 == t.node2; }
+	};
+	
 	public:
 	using DronePlotDBIterator = std::list<DronePlot>::iterator;
 	
@@ -104,6 +114,7 @@ class DronePlotDB {
 	std::list<DronePlot> _dbdata;
 	std::mutex _mutex;
 	
+	std::map<unsigned int, int> calculateTimeSkew();
 	void deduplicate();
 };
 
