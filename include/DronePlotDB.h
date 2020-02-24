@@ -60,6 +60,8 @@ class DronePlot {
  **************************************************************************************************/
 class DronePlotDB {
 	public:
+	using DronePlotDBIterator = std::list<DronePlot>::iterator;
+	
 	DronePlotDB() = default;
 	virtual ~DronePlotDB() = default;
 	
@@ -82,14 +84,14 @@ class DronePlotDB {
 	
 	// Iterators for simple access to the database. Can use these to modify drone plot points
 	// but won't be able to add/delete PlotObjects. Use erase (below) for that as it is mutex'd
-	std::list<DronePlot>::iterator begin() { return _dbdata.begin(); };
+	DronePlotDBIterator begin() { return _dbdata.begin(); };
 	
-	std::list<DronePlot>::iterator end() { return _dbdata.end(); };
+	DronePlotDBIterator end() { return _dbdata.end(); };
 	
 	// Manipulate database entries (mutex'd functions)
 	void popFront();
 	void erase(unsigned int i);
-	std::list<DronePlot>::iterator erase(std::list<DronePlot>::iterator dptr);
+	DronePlotDBIterator erase(DronePlotDBIterator dptr);
 	
 	
 	// Return the number of plot points stored

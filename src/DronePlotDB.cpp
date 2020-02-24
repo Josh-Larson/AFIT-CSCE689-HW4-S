@@ -204,7 +204,7 @@ int DronePlotDB::loadCSVFile(const char *filename) {
 	// Get line by line, parsing out our data
 	std::string buf, data;
 	int count = 0;
-	std::list<DronePlot>::iterator newplot;
+	DronePlotDBIterator newplot;
 	
 	while (!cfile.eof()) {
 		std::getline(cfile, buf);
@@ -302,7 +302,7 @@ int DronePlotDB::writeBinaryFile(const char *filename) {
 
 int DronePlotDB::loadBinaryFile(const char *filename) {
 	std::vector<uint8_t> buf;
-	std::list<DronePlot>::iterator dptr;
+	DronePlotDBIterator dptr;
 	
 	FileFD infile(filename);
 	int count = 0;
@@ -377,7 +377,7 @@ void DronePlotDB::erase(unsigned int i) {
  *
  *****************************************************************************************/
 
-std::list<DronePlot>::iterator DronePlotDB::erase(std::list<DronePlot>::iterator dptr) {
+DronePlotDB::DronePlotDBIterator DronePlotDB::erase(DronePlotDBIterator dptr) {
 	std::unique_lock lk(_mutex);
 	
 	return _dbdata.erase(dptr);
