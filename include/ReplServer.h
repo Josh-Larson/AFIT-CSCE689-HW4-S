@@ -5,6 +5,7 @@
 #include <memory>
 #include "QueueMgr.h"
 #include "DronePlotDB.h"
+#include "ReplicationManager.h"
 
 /***************************************************************************************
  * ReplServer - class that manages replication between servers. The data is automatically
@@ -15,6 +16,8 @@
  *
  ***************************************************************************************/
 class ReplServer {
+	ReplicationManager replicationManager;
+	
 	public:
 	ReplServer(DronePlotDB &plotdb, const char *ip_addr, unsigned short port, float _time_mult = 1.0, unsigned int verbosity = 1);
 	ReplServer(DronePlotDB &plotdb, float _time_mult = 1.0);

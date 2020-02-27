@@ -124,7 +124,7 @@ void AntennaSim::simulate() {
 			_to_db.addPlot(diter->drone_id, diter->node_id, diter->timestamp, diter->latitude, diter->longitude);
 			diter = _to_db.end();
 			diter--;
-			diter->setFlags(DBFLAG_NEW);
+			diter->setFlags(DBFLAG_NEW | DBFLAG_USER1);
 			
 			_source_db.popFront();
 			diter = _source_db.begin();

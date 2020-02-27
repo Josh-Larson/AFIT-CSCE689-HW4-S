@@ -53,6 +53,7 @@ class DronePlot {
 	
 };
 
+using DronePlotDBIterator = std::list<DronePlot>::iterator;
 
 /**************************************************************************************************
  * DronePlotDB - class to manage a database of DronePlot objects, which manage drone GPS plots that
@@ -60,17 +61,7 @@ class DronePlot {
  *
  **************************************************************************************************/
 class DronePlotDB {
-	struct TimeSkew {
-		unsigned int node1;
-		unsigned int node2;
-		/** The time skew from node1 to node2. AKA node2.time - node1.time */
-		time_t skew;
-		
-		[[nodiscard]] bool operator==(const TimeSkew & t) const noexcept { return node1 == t.node1 && node2 == t.node2; }
-	};
-	
 	public:
-	using DronePlotDBIterator = std::list<DronePlot>::iterator;
 	
 	DronePlotDB() = default;
 	virtual ~DronePlotDB() = default;
@@ -95,7 +86,6 @@ class DronePlotDB {
 	// Iterators for simple access to the database. Can use these to modify drone plot points
 	// but won't be able to add/delete PlotObjects. Use erase (below) for that as it is mutex'd
 	DronePlotDBIterator begin() { return _dbdata.begin(); };
-	
 	DronePlotDBIterator end() { return _dbdata.end(); };
 	
 	// Manipulate database entries (mutex'd functions)
@@ -113,9 +103,6 @@ class DronePlotDB {
 	private:
 	std::list<DronePlot> _dbdata;
 	std::mutex _mutex;
-	
-	std::map<unsigned int, int> calculateTimeSkew();
-	void deduplicate();
 };
 
 

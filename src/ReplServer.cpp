@@ -93,6 +93,9 @@ void ReplServer::replicate() {
 		
 		usleep(1000);
 	}
+	
+	replicationManager.updatePlots(_plotdb);
+	replicationManager.updateLeaderNodeIds(_plotdb);
 }
 
 /**********************************************************************************************
@@ -184,6 +187,7 @@ void ReplServer::addReplDronePlots(std::vector<uint8_t> &data) {
 		addSingleDronePlot(plot);
 		dptr += DronePlot::getDataSize();
 	}
+	replicationManager.updatePlots(_plotdb);
 	if (_verbosity >= 2)
 		std::cout << "Replicated in " << count << " plots\n";
 }
@@ -200,6 +204,9 @@ void ReplServer::addSingleDronePlot(std::vector<uint8_t> &data) {
 	tmp_plot.deserialize(data);
 	
 	_plotdb.addPlot(tmp_plot.drone_id, tmp_plot.node_id, tmp_plot.timestamp, tmp_plot.latitude, tmp_plot.longitude);
+	auto last = _plotdb.end();
+	last--;
+	last->setFlags(DBFLAG_USER1);
 }
 
 

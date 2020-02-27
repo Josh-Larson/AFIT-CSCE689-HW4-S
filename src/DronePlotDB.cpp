@@ -241,8 +241,6 @@ int DronePlotDB::loadCSVFile(const char *filename) {
  *****************************************************************************************/
 
 int DronePlotDB::writeCSVFile(const char *filename) {
-	deduplicate();
-	
 	std::ofstream cfile;
 	int count = 0;
 	
@@ -382,7 +380,7 @@ void DronePlotDB::erase(unsigned int i) {
  *
  *****************************************************************************************/
 
-DronePlotDB::DronePlotDBIterator DronePlotDB::erase(DronePlotDBIterator dptr) {
+DronePlotDBIterator DronePlotDB::erase(DronePlotDBIterator dptr) {
 	std::unique_lock lk(_mutex);
 	
 	return _dbdata.erase(dptr);
@@ -419,47 +417,3 @@ void DronePlotDB::sortByTime() {
 void DronePlotDB::clear() {
 	_dbdata.clear();
 }
-
-std::map<unsigned int, int> DronePlotDB::calculateTimeSkew() {
-	auto timeSkew = std::vector<TimeSkew>();
-	auto kernelFront = _dbdata.begin();
-	auto kernelBack = kernelFront;
-	auto lastElement = _dbdata.end();
-	
-	while (kernelFront != lastElement) {
-		for (auto k = kernelBack; k != kernelFront; k++) {
-			if (k->node_id != kernelFront->node_id && std::abs(kernelFront->latitude - k->latitude) <= 1E-5 && std::abs(kernelFront->longitude - k->longitude) <= 1E-5) {
-				auto calculatedSkew = TimeSkew {
-					std::min(k->node_id, kernelFront->node_id),
-					std::max(k->node_id, kernelFront->node_id),
-					((kernelFront->node_id > k->node_id) ? 1 : -1) * (kernelFront->timestamp - k->timestamp)
-				};
-				auto storedSkew = std::find(timeSkew.begin(), timeSkew.end(), calculatedSkew);
-				if (storedSkew == timeSkew.end()) {
-					timeSkew.emplace_back(calculatedSkew);
-				} else {
-					assert(storedSkew->skew == calculatedSkew.skew);
-				}
-			}
-		}
-		kernelFront++;
-		if (std::distance(kernelBack, kernelFront) > 5)
-			kernelBack++;
-	}
-	
-	auto skews = std::map<unsigned int, int>();
-	
-	return skews;
-}
-
-void DronePlotDB::deduplicate() {
-	auto timeSkews = calculateTimeSkew();
-	for (auto & data : _dbdata) {
-		if (data.node_id)
-	}
-	for (auto skew : timeSkews) {
-		fprintf(stdout, "%d - %d  skew: %ld\n", skew.node1, skew.node2, skew.skew);
-	}
-}
-
-
