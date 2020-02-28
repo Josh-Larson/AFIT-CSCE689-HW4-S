@@ -31,13 +31,10 @@ class ReplicationManager {
 	
 	private:
 	/** Checks every plot for a new time skew */
-	bool updateTimeSkews(DronePlotDBIterator begin, DronePlotDBIterator end) noexcept;
+	void updateTimeSkews(DronePlotDBIterator begin, DronePlotDBIterator end) noexcept;
 	
 	/** Converts all of the time skews to be the new leader's, returning TRUE on success and FALSE on failure  */
-	bool convertTimeSkews(DronePlotDBIterator begin, DronePlotDBIterator end, NodeId newLeader) noexcept;
-	
-	/** Returns the lowest valued NodeID */
-	[[nodiscard]] NodeId getBestLeader(DronePlotDBIterator begin, DronePlotDBIterator end) const noexcept;
+	void convertTimeSkews(DronePlotDBIterator begin, DronePlotDBIterator end, NodeId newLeader) noexcept;
 	
 	/** Checks a particular plot for new time skew information */
 	bool checkForNewSkew(DronePlotDBIterator begin, DronePlotDBIterator end, const DronePlot & plot);

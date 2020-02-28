@@ -10,16 +10,20 @@ bool equivalent_drone_plots(const DronePlot & a, const DronePlot & b) {
 void ReplicationManager::updatePlots(DronePlotDB & plots) {
 	auto begin = plots.begin();
 	auto end = plots.end();
-	if (updateTimeSkews(begin, end)) {
-		if (convertTimeSkews(begin, end, getBestLeader(begin, end))) {
-			plots.sortByTime();
-			for (auto prev = plots.begin(), next = ++plots.begin(); next != plots.end();) {
-				if (equivalent_drone_plots(*prev, *next)) {
-					next = plots.erase(next);
-				} else {
-					prev++;
-					next++;
-				}
+	updateTimeSkews(begin, end);
+	if (plots.size() > 0) {
+		auto newLeader = std::min_element(begin, end, [](const auto & a, const auto & b) { return a.node_id < b.node_id; })->node_id;
+		convertTimeSkews(begin, end, newLeader);
+		plots.sortByTime();
+		auto prev = plots.begin();
+		auto next = plots.begin();
+		next++;
+		while (next != plots.end()) {
+			if (equivalent_drone_plots(*prev, *next)) {
+				next = plots.erase(next);
+			} else {
+				prev++;
+				next++;
 			}
 		}
 	}
@@ -31,50 +35,23 @@ void ReplicationManager::updateLeaderNodeIds(DronePlotDB &plots) {
 	}
 }
 
-bool ReplicationManager::updateTimeSkews(DronePlotDBIterator begin, DronePlotDBIterator end) noexcept {
-	bool updated = false;
-	
+void ReplicationManager::updateTimeSkews(DronePlotDBIterator begin, DronePlotDBIterator end) noexcept {
 	for (auto it = begin; it != end; it++) {
-		if (it->isFlagSet(DBFLAG_USER1)) {
-			updated = checkForNewSkew(begin, end, *it) || updated;
-		}
+		checkForNewSkew(begin, end, *it);
 	}
-	
-	return updated;
 }
 
-bool ReplicationManager::convertTimeSkews(DronePlotDBIterator begin, DronePlotDBIterator end, NodeId newLeader) noexcept {
+void ReplicationManager::convertTimeSkews(DronePlotDBIterator begin, DronePlotDBIterator end, NodeId newLeader) noexcept {
 	assert(newLeader != InvalidNodeId);
-	const auto previousToCurrent = (leader == InvalidNodeId) ? 0 : getSkew(leader, newLeader);
-	if (!previousToCurrent.has_value())
-		return false; // Not ready to update yet
 	leader = newLeader;
-	const auto currentAdjustment = *previousToCurrent;
 	
 	for (auto it = begin; it != end; it++) {
-		if (it->isFlagSet(DBFLAG_USER1)) {
-			const auto adjustment = getSkew(it->node_id, newLeader);
-			if (adjustment) {
-				it->clrFlags(DBFLAG_USER1);
-				it->timestamp += *adjustment;
-			}
-		} else {
-			it->timestamp += currentAdjustment;
+		const auto adjustment = getSkew(it->node_id, newLeader);
+		if (adjustment) {
+			it->timestamp += *adjustment;
+			it->node_id = leader;
 		}
 	}
-	
-	return true;
-}
-
-ReplicationManager::NodeId ReplicationManager::getBestLeader(DronePlotDBIterator begin, DronePlotDBIterator end) const noexcept {
-	auto currentBest = std::numeric_limits<NodeId>::max();
-	
-	for (auto it = begin; it != end; it++) {
-		if (it->node_id < currentBest)
-			currentBest = it->node_id;
-	}
-	
-	return currentBest;
 }
 
 bool ReplicationManager::checkForNewSkew(DronePlotDBIterator begin, DronePlotDBIterator end, const DronePlot &plot) {

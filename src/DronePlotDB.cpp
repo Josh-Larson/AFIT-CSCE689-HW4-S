@@ -14,7 +14,13 @@
 
 // Short compare function for database sort by timestamp
 bool compare_plot(const DronePlot &pp1, const DronePlot &pp2) {
-	return (pp1.timestamp < pp2.timestamp);
+	if (pp1.timestamp != pp2.timestamp)
+		return pp1.timestamp < pp2.timestamp;
+	if (pp1.drone_id != pp2.drone_id)
+		return pp1.drone_id < pp2.drone_id;
+	if (pp1.latitude != pp2.latitude)
+		return pp1.latitude < pp2.latitude;
+	return pp1.longitude < pp2.longitude;
 }
 
 /*****************************************************************************************
